@@ -17,14 +17,14 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../lib)
 #set the include directories
 include_directories (${PROJECT_SOURCE_DIR}/../include	${OpenCV_INCLUDE_DIRS})
 #libraries
-add_library(tld_utils tld_utils.cpp)
+add_library(utils utils.cpp)
 add_library(LKTracker LKTracker.cpp)
 add_library(ferNN FerNNClassifier.cpp)
-add_library(tld TLD.cpp)
+add_library(mil MIL.cpp)
 #executables
-add_executable(run_tld run_tld.cpp)
+add_executable(main main.cpp)
 #link the libraries
-target_link_libraries(run_tld tld LKTracker ferNN tld_utils ${OpenCV_LIBS})
+target_link_libraries(main mil LKTracker ferNN utils ${OpenCV_LIBS})
 #set optimization level 
 set(CMAKE_BUILD_TYPE Release)
 

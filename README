@@ -12,15 +12,15 @@ cmake ../src/
 make
 cd ../bin/
 %To run from camera
-./run_tld -p ../parameters.yml -tl
+./main -p ../parameters.yml -tl
 %To run from file
-./run_tld -p ../parameters.yml -s ../datasets/06_car/car.mpg -tl
+./main -p ../parameters.yml -s ../datasets/06_car/car.mpg -tl
 %To init bounding box from file
-./run_tld -p ../parameters.yml -s ../datasets/06_car/car.mpg -b ../datasets/06_car/init.txt -tl
+./main -p ../parameters.yml -s ../datasets/06_car/car.mpg -b ../datasets/06_car/init.txt -tl
 %To train only in the firs frame (no tracking, no learning)
-./run_tld -p ../parameters.yml -s ../datasets/06_car/car.mpg -b ../datasets/06_car/init.txt 
+./main -p ../parameters.yml -s ../datasets/06_car/car.mpg -b ../datasets/06_car/init.txt 
 %To test the final detector (Repeat the video, first time learns, second time detects)
-./run_tld -p ../parameters.yml -s ../datasets/06_car/car.mpg -b ../datasets/06_car/init.txt -tl -r
+./main -p ../parameters.yml -s ../datasets/06_car/car.mpg -b ../datasets/06_car/init.txt -tl -r
 
 =====================================
 Evaluation

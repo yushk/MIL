@@ -1,8 +1,8 @@
 #include <opencv2/opencv.hpp>
-#include <tld_utils.h>
+#include "utils.h"
 #include <iostream>
 #include <sstream>
-#include <TLD.h>
+#include "MIL.h"
 #include <stdio.h>
 using namespace cv;
 using namespace std;
@@ -113,8 +113,8 @@ int main(int argc, char * argv[]){
     return 1;
   }
   //Register mouse callback to draw the bounding box
-  cvNamedWindow("TLD",CV_WINDOW_AUTOSIZE);
-  cvSetMouseCallback( "TLD", mouseHandler, NULL );
+  cvNamedWindow("MIL",CV_WINDOW_AUTOSIZE);
+  cvSetMouseCallback("MIL", mouseHandler, NULL );
   //TLD framework
   TLD tld;
   //Read parameters file
@@ -127,8 +127,8 @@ int main(int argc, char * argv[]){
       cvtColor(frame, last_gray, CV_RGB2GRAY);
       frame.copyTo(first);
   }else{
-      capture.set(CV_CAP_PROP_FRAME_WIDTH,340);
-      capture.set(CV_CAP_PROP_FRAME_HEIGHT,240);
+      capture.set(CV_CAP_PROP_FRAME_WIDTH,680);
+      capture.set(CV_CAP_PROP_FRAME_HEIGHT,480);
   }
 
   ///Initialization
@@ -142,7 +142,7 @@ GETBOUNDINGBOX:
       first.copyTo(frame);
     cvtColor(frame, last_gray, CV_RGB2GRAY);
     drawBox(frame,box);
-    imshow("TLD", frame);
+    imshow("MIL", frame);
     if (cvWaitKey(33) == 'q')
 	    return 0;
   }
@@ -152,7 +152,7 @@ GETBOUNDINGBOX:
       goto GETBOUNDINGBOX;
   }
   //Remove callback
-  cvSetMouseCallback( "TLD", NULL, NULL );
+  cvSetMouseCallback( "MIL", NULL, NULL );
   printf("Initial Bounding Box = x:%d y:%d h:%d w:%d\n",box.x,box.y,box.width,box.height);
   //Output file
   FILE  *bb_file = fopen("bounding_boxes.txt","w");
@@ -175,13 +175,13 @@ REPEAT:
     tld.processFrame(last_gray,current_gray,pts1,pts2,pbox,status,tl,bb_file);
     //Draw Points
     if (status){
-      drawPoints(frame,pts1);
-      drawPoints(frame,pts2,Scalar(0,255,0));
+      // drawPoints(frame,pts1);
+      // drawPoints(frame,pts2,Scalar(0,255,0));
       drawBox(frame,pbox);
       detections++;
     }
     //Display
-    imshow("TLD", frame);
+    imshow("MIL", frame);
     //swap points and images
     swap(last_gray,current_gray);
     pts1.clear();
