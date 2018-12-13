@@ -4,6 +4,11 @@
 #include <sstream>
 #include "MIL.h"
 #include <stdio.h>
+#include<netinet/in.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<arpa/inet.h>
+
 using namespace cv;
 using namespace std;
 //Global variables
@@ -99,8 +104,50 @@ void read_options(int argc, char** argv,VideoCapture& capture,FileStorage &fs){
       }
   }
 }
+float KPspeed=1.0,
+KIspeed=0,
+KDspeed=0,
+speedErr=0,
+latsSpeedErr=0,
+speedIntegral=0,
+speed=0;
+// 计算速度
+int PIDspeed(float setX,float currX){
+  speedErr = setX - currX;
+  speedIntegral += speedErr;
+  speed = KPspeed * speedErr + KIspeed*speedIntegral + KDspeed*(speedErr -latsSpeedErr );
+  latsSpeedErr = speedErr;
+  return speed;
+}
+float KPdirection=1.0,
+KIdirection=0,
+KDdirection=0,
+directionErr=0,
+latsDirectionErr=0,
+directionIntegral=0,
+direction=0;
+// 计算方向
+int PIDdirection(float setWidth,float currWidth){
+  directionErr = setWidth - currWidth;
+  directionIntegral += directionErr;
+  direction = KPdirection * directionErr + KIdirection*directionIntegral + KDdirection*(directionErr -latsDirectionErr );
+  latsDirectionErr = directionErr;
+  return direction;
+}
+
+
 
 int main(int argc, char * argv[]){
+  const unsigned short SERVERPORT = 2001;
+  const int MAXSIZE = 1024;
+  const char* SERVER_IP = "192.168.8.1";
+  char DATA[200] = "";
+  char wifisend[20];
+  char wifisenderror[20] = "A000000000000000000";
+  int sock, recvBytes;
+  char buf[MAXSIZE];
+  sockaddr_in serv_addr;
+
   VideoCapture capture;
   capture.open(0);
   FileStorage fs;
@@ -112,6 +159,35 @@ int main(int argc, char * argv[]){
 	cout << "capture device failed to open!" << endl;
     return 1;
   }
+
+   // 通过wifi 获取小车摄像头视频数据
+
+  // const string address = "http://192.168.8.1:8083/?action=stream.mjpg";
+  // if (!capture.open(address))
+  // {
+	// cout << "wifi failed to open!" << endl;
+  //   return 1;
+  // }
+
+  
+  // 与小车通信，与路由简历socket 链接 
+    // if( (sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    // {
+    //     cerr<<"socket create fail!"<<endl;
+    //     exit(1);
+    // }
+    // bzero( &serv_addr, sizeof(serv_addr) );
+    // serv_addr.sin_family =  AF_INET;
+    // serv_addr.sin_port = htons(SERVERPORT);
+    // serv_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
+
+    // if( connect(sock, (sockaddr*)&serv_addr, sizeof(sockaddr)) == -1)
+    // {
+    //     cerr<<"connect error"<<endl;
+    //     exit(1);
+    // }
+
+
   //Register mouse callback to draw the bounding box
   cvNamedWindow("MIL",CV_WINDOW_AUTOSIZE);
   cvSetMouseCallback("MIL", mouseHandler, NULL );
@@ -153,9 +229,9 @@ GETBOUNDINGBOX:
   }
   //Remove callback
   cvSetMouseCallback( "MIL", NULL, NULL );
-  printf("Initial Bounding Box = x:%d y:%d h:%d w:%d\n",box.x,box.y,box.width,box.height);
+  // printf("Initial Bounding Box = x:%f y:%f h:%f w:%f\n",box.x,box.y,box.width,box.height);
   //Output file
-  FILE  *bb_file = fopen("bounding_boxes.txt","w");
+  FILE  *bb_file = fopen("log.txt","w");
   //TLD initialization
   tld.init(last_gray,box,bb_file);
 
@@ -167,6 +243,10 @@ GETBOUNDINGBOX:
   bool status=true;
   int frames = 1;
   int detections = 1;
+
+  float boxX = box.x+(box.width/2); // 记录初始位置
+  float boxWidth = box.width;
+  float currBoxX,currBoxWidth;
 REPEAT:
   while(capture.read(frame)){
     //get frame
@@ -175,10 +255,23 @@ REPEAT:
     tld.processFrame(last_gray,current_gray,pts1,pts2,pbox,status,tl,bb_file);
     //Draw Points
     if (status){
-      // drawPoints(frame,pts1);
-      // drawPoints(frame,pts2,Scalar(0,255,0));
+      currBoxX = pbox.x+(pbox.width/2); 
+      currBoxWidth = pbox.width;
+      speed = PIDspeed(boxWidth, currBoxWidth);
+      direction = PIDdirection(boxX,currBoxX);
+
+      sprintf(DATA,"S%fD%fE",speed,direction);
+      // write(sock, DATA, strlen(DATA));
+
       drawBox(frame,pbox);
       detections++;
+      fprintf(bb_file,"boxX:%f,boxWidth:%f\n",boxX,boxWidth);
+      fprintf(bb_file,"currBoxX:%f,currBoxWidth:%f\n",currBoxX,currBoxWidth);
+      fprintf(bb_file,"speed:%f,direction:%f\n",speed,direction);
+      fprintf(bb_file,"DATA:%s\n",DATA);
+      fprintf(bb_file,"x:%d,y:%d,width:%d,height:%d\n",pbox.x,pbox.y,pbox.width,pbox.height);
+      // write(sock, DATA, strlen(DATA));
+
     }
     //Display
     imshow("MIL", frame);
