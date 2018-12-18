@@ -8,7 +8,8 @@
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<arpa/inet.h>
-
+#include<unistd.h>
+#include <cstdlib>
 using namespace cv;
 using namespace std;
 //Global variables
@@ -170,22 +171,24 @@ int main(int argc, char * argv[]){
   // }
 
   
-  // 与小车通信，与路由简历socket 链接 
-    // if( (sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    // {
-    //     cerr<<"socket create fail!"<<endl;
-    //     exit(1);
-    // }
-    // bzero( &serv_addr, sizeof(serv_addr) );
-    // serv_addr.sin_family =  AF_INET;
-    // serv_addr.sin_port = htons(SERVERPORT);
-    // serv_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
+  //与小车通信，与路由简历socket 链接 
+    if( (sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        printf("socket create fail!\n");
+        exit(1);
+    }
+    bzero( &serv_addr, sizeof(serv_addr) );
+    serv_addr.sin_family =  AF_INET;
+    serv_addr.sin_port = htons(SERVERPORT);
+    serv_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
-    // if( connect(sock, (sockaddr*)&serv_addr, sizeof(sockaddr)) == -1)
-    // {
-    //     cerr<<"connect error"<<endl;
-    //     exit(1);
-    // }
+    if( connect(sock, (sockaddr*)&serv_addr, sizeof(sockaddr)) == -1)
+    {
+        printf("connect error\n");
+        exit(1);
+    }else{
+      printf("connect success\n");
+    }
 
 
   //Register mouse callback to draw the bounding box
@@ -261,8 +264,8 @@ REPEAT:
       direction = PIDdirection(boxX,currBoxX);
 
       sprintf(DATA,"S%fD%fE",speed,direction);
-      // write(sock, DATA, strlen(DATA));
-
+      //write(sock, DATA, strlen(DATA));
+      printf("DATA:%s,,,,len%d\n",DATA,strlen(DATA));
       drawBox(frame,pbox);
       detections++;
       fprintf(bb_file,"boxX:%f,boxWidth:%f\n",boxX,boxWidth);
@@ -270,7 +273,7 @@ REPEAT:
       fprintf(bb_file,"speed:%f,direction:%f\n",speed,direction);
       fprintf(bb_file,"DATA:%s\n",DATA);
       fprintf(bb_file,"x:%d,y:%d,width:%d,height:%d\n",pbox.x,pbox.y,pbox.width,pbox.height);
-      // write(sock, DATA, strlen(DATA));
+      write(sock, DATA, strlen(DATA));
 
     }
     //Display
