@@ -110,10 +110,10 @@ KIspeed=0,
 KDspeed=0,
 speedErr=0,
 latsSpeedErr=0,
-speedIntegral=0,
-speed=0;
+speedIntegral=0;
 // 计算速度
 int PIDspeed(float setX,float currX){
+  int speed=0;
   speedErr = setX - currX;
   speedIntegral += speedErr;
   speed = KPspeed * speedErr + KIspeed*speedIntegral + KDspeed*(speedErr -latsSpeedErr );
@@ -125,10 +125,11 @@ KIdirection=0,
 KDdirection=0,
 directionErr=0,
 latsDirectionErr=0,
-directionIntegral=0,
-direction=0;
+directionIntegral=0;
+
 // 计算方向
 int PIDdirection(float setWidth,float currWidth){
+  int direction=0;
   directionErr = setWidth - currWidth;
   directionIntegral += directionErr;
   direction = KPdirection * directionErr + KIdirection*directionIntegral + KDdirection*(directionErr -latsDirectionErr );
@@ -142,7 +143,7 @@ int main(int argc, char * argv[]){
   const unsigned short SERVERPORT = 2001;
   const int MAXSIZE = 1024;
   const char* SERVER_IP = "192.168.8.1";
-  char DATA[200] = "";
+  char DATA[20];
   char wifisend[20];
   char wifisenderror[20] = "A000000000000000000";
   int sock, recvBytes;
@@ -246,10 +247,12 @@ GETBOUNDINGBOX:
   bool status=true;
   int frames = 1;
   int detections = 1;
+  int sp,dr;
 
   float boxX = box.x+(box.width/2); // 记录初始位置
   float boxWidth = box.width;
   float currBoxX,currBoxWidth;
+  int count =0;
 REPEAT:
   while(capture.read(frame)){
     //get frame
@@ -257,23 +260,30 @@ REPEAT:
     //Process Frame
     tld.processFrame(last_gray,current_gray,pts1,pts2,pbox,status,tl,bb_file);
     //Draw Points
+    
+
     if (status){
+      count++;
       currBoxX = pbox.x+(pbox.width/2); 
       currBoxWidth = pbox.width;
-      speed = PIDspeed(boxWidth, currBoxWidth);
-      direction = PIDdirection(boxX,currBoxX);
+      sp = PIDspeed(boxWidth, currBoxWidth);
+      dr = PIDdirection(boxX,currBoxX);
 
-      sprintf(DATA,"S%fD%fE",speed,direction);
-      //write(sock, DATA, strlen(DATA));
+      sprintf(DATA,"S%dD%dE",sp,dr);
+      // if(count>2){
+        // count=0;
+      DATA[strlen(DATA)] = '\0';
+      write(sock, DATA, strlen(DATA));
       printf("DATA:%s,,,,len%d\n",DATA,strlen(DATA));
+      // }
       drawBox(frame,pbox);
       detections++;
       fprintf(bb_file,"boxX:%f,boxWidth:%f\n",boxX,boxWidth);
       fprintf(bb_file,"currBoxX:%f,currBoxWidth:%f\n",currBoxX,currBoxWidth);
-      fprintf(bb_file,"speed:%f,direction:%f\n",speed,direction);
+      fprintf(bb_file,"speed:%d,direction:%d\n",sp,dr);
       fprintf(bb_file,"DATA:%s\n",DATA);
       fprintf(bb_file,"x:%d,y:%d,width:%d,height:%d\n",pbox.x,pbox.y,pbox.width,pbox.height);
-      write(sock, DATA, strlen(DATA));
+      // write(sock, DATA, strlen(DATA));
 
     }
     //Display
