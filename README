@@ -14,7 +14,8 @@ cd ../bin/
 %To run from camera
 ./main -p ../parameters.yml -tl
 %To run from file
-./main -p ../parameters.yml -s ../datasets/06_car/car.mpg -tl
+./main -p ../parameters.yml -s http://192.168.8.1:8083/?action=stream.mjpg -tl
+./main -p ../parameters.yml -s http://pic.ibaotu.com/00/15/93/07e888piCkJh.mp4 -tl
 %To init bounding box from file
 ./main -p ../parameters.yml -s ../datasets/06_car/car.mpg -b ../datasets/06_car/init.txt -tl
 %To train only in the firs frame (no tracking, no learning)

@@ -83,6 +83,7 @@ void read_options(int argc, char** argv,VideoCapture& capture,FileStorage &fs){
       if (strcmp(argv[i],"-s")==0){
           if (argc>i){
               video = string(argv[i+1]);
+              printf("open video\n");
               capture.open(video);
               fromfile = true;
           }
@@ -149,6 +150,7 @@ int main(int argc, char * argv[]){
   int sock, recvBytes;
   char buf[MAXSIZE];
   sockaddr_in serv_addr;
+  const string address = "http://192.168.8.1:8083/?action=stream.mjpg";
 
   VideoCapture capture;
   capture.open(0);
@@ -164,32 +166,30 @@ int main(int argc, char * argv[]){
 
    // 通过wifi 获取小车摄像头视频数据
 
-  // const string address = "http://192.168.8.1:8083/?action=stream.mjpg";
   // if (!capture.open(address))
   // {
-	// cout << "wifi failed to open!" << endl;
+	//   cout << "wifi failed to open!" << endl;
   //   return 1;
   // }
-
   
   //与小车通信，与路由简历socket 链接 
-    if( (sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    {
-        printf("socket create fail!\n");
-        exit(1);
-    }
+    // if( (sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    // {
+    //     printf("socket create fail!\n");
+    //     exit(1);
+    // }
     bzero( &serv_addr, sizeof(serv_addr) );
     serv_addr.sin_family =  AF_INET;
     serv_addr.sin_port = htons(SERVERPORT);
     serv_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
-    if( connect(sock, (sockaddr*)&serv_addr, sizeof(sockaddr)) == -1)
-    {
-        printf("connect error\n");
-        exit(1);
-    }else{
-      printf("connect success\n");
-    }
+    // if( connect(sock, (sockaddr*)&serv_addr, sizeof(sockaddr)) == -1)
+    // {
+    //     printf("connect error\n");
+    //     exit(1);
+    // }else{
+    //   printf("connect success\n");
+    // }
 
 
   //Register mouse callback to draw the bounding box
