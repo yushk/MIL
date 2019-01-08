@@ -1,4 +1,7 @@
 #include <opencv2/opencv.hpp>
+// #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "utils.h"
 #include <iostream>
 #include <sstream>
@@ -83,8 +86,9 @@ void read_options(int argc, char** argv,VideoCapture& capture,FileStorage &fs){
       if (strcmp(argv[i],"-s")==0){
           if (argc>i){
               video = string(argv[i+1]);
-              printf("open video\n");
+              cout << "open video:" << video.c_str() << endl;
               capture.open(video);
+              cout << "open video:" << video.c_str() << endl;
               fromfile = true;
           }
           else
@@ -158,14 +162,14 @@ int main(int argc, char * argv[]){
   //Read options
   read_options(argc,argv,capture,fs);
   //Init camera
+  printf("start\n");
+  sleep(1);
   if (!capture.isOpened())
   {
-	cout << "capture device failed to open!" << endl;
+	printf("capture device failed to open!\n");
     return 1;
   }
-
-   // 通过wifi 获取小车摄像头视频数据
-
+  // 通过wifi 获取小车摄像头视频数据
   // if (!capture.open(address))
   // {
 	//   cout << "wifi failed to open!" << endl;

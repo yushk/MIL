@@ -33,4 +33,5 @@ python ../datasets/evaluate_vis.py ../datasets/06_car/car.mpg bounding_boxes.txt
 Thanks
 ====================================
 To Zdenek Kalal for realeasing his awesome algorithm
+https://blog.csdn.net/hjxu2016/article/details/82390434
 
